@@ -5,7 +5,6 @@ go 1.18
 require (
 	github.com/bwmarrin/discordgo v0.25.0
 	github.com/go-gormigrate/gormigrate/v2 v2.0.0
-	github.com/google/go-cmp v0.5.7
 	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.5
 	github.com/stretchr/testify v1.7.1
