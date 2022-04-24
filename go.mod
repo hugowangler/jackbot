@@ -8,6 +8,7 @@ require (
 	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.5
 	github.com/stretchr/testify v1.7.1
+	github.com/testcontainers/testcontainers-go v0.13.0
 	go.uber.org/zap v1.21.0
 	gorm.io/driver/postgres v1.3.5
 	gorm.io/gorm v1.23.4
@@ -51,7 +52,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
-	github.com/testcontainers/testcontainers-go v0.13.0 // indirect
 	go.opencensus.io v0.22.3 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
