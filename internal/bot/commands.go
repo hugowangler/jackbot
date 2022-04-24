@@ -1,7 +1,6 @@
 package bot
 
 import (
-	"errors"
 	"fmt"
 	"jackbot/db/models"
 	"jackbot/internal/row"
@@ -110,11 +109,11 @@ func (c *CommandHandler) handleCreateGame(msg string) (models.Game, error) {
 
 	strBonusRange, exists := args["bonusrange"]
 	if !exists {
-		return models.Game{}, fmt.Errorf("strBonusRange is required")
+		return models.Game{}, fmt.Errorf("bonusrange is required")
 	}
 	game.BonusRange, err = strconv.Atoi(strBonusRange)
 	if err != nil {
-		return models.Game{}, fmt.Errorf("bonusRange must be an integer")
+		return models.Game{}, fmt.Errorf("bonusrange must be an integer")
 	}
 
 	strEntryFee, exists := args["entryfee"]
@@ -130,7 +129,7 @@ func (c *CommandHandler) handleCreateGame(msg string) (models.Game, error) {
 
 	err = models.CreateGame(&game, c.db)
 	if err != nil {
-		if errors.Is(err, &models.GameAlreadyExistsError{}) {
+		if err, ok := err.(*models.GameAlreadyExistsError); ok {
 			return models.Game{}, err
 		}
 

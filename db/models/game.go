@@ -8,11 +8,11 @@ import (
 )
 
 type GameAlreadyExistsError struct {
-	Name string
+	name string
 }
 
 func (e *GameAlreadyExistsError) Error() string {
-	return fmt.Sprintf("game with name %s already exists", e.Name)
+	return fmt.Sprintf("game with name %s already exists", e.name)
 }
 
 type Game struct {
@@ -36,7 +36,7 @@ func CreateGame(game *Game, db *gorm.DB) error {
 	}
 
 	if len(*existingGame) > 0 {
-		return &GameAlreadyExistsError{Name: game.Name}
+		return &GameAlreadyExistsError{name: game.Name}
 	}
 
 	return db.Create(game).Error
