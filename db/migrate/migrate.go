@@ -19,6 +19,7 @@ func Migrate(db *gorm.DB) error {
 						Id           uint64 `gorm:"primaryKey"`
 						CreatedAt    time.Time
 						UpdatedAt    time.Time
+						Name         string
 						Jackpot      int
 						Numbers      int
 						NumbersRange int

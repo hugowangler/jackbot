@@ -1,19 +1,22 @@
 package bot
 
 import (
+	"jackbot/db/models"
+	"strings"
+
 	"github.com/bwmarrin/discordgo"
 	"go.uber.org/zap"
-	"jackbot/internal/game"
-	"strings"
+	"gorm.io/gorm"
 )
 
 type Bot struct {
-	logger  *zap.SugaredLogger
-	game    *game.Game
-	userId  string
-	session *discordgo.Session
-	token   string
-	prefix  string
+	logger     *zap.SugaredLogger
+	game       models.Game
+	userId     string
+	session    *discordgo.Session
+	token      string
+	prefix     string
+	cmdHandler *CommandHandler
 }
 
 func (b *Bot) Start() error {
@@ -55,7 +58,7 @@ func (b *Bot) messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	response := HandleInput(msg, b.game)
+	response := b.cmdHandler.HandleInput(msg)
 	if response != "" {
 		_, err := s.ChannelMessageSend(m.ChannelID, response)
 		if err != nil {
@@ -64,11 +67,20 @@ func (b *Bot) messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 }
 
-func NewBot(token string, prefix string, game *game.Game, logger *zap.SugaredLogger) *Bot {
-	return &Bot{
+func NewBot(token string, prefix string, games []models.Game, logger *zap.SugaredLogger, db *gorm.DB) *Bot {
+	bot := &Bot{
 		token:  token,
 		prefix: prefix,
-		game:   game,
 		logger: logger,
+		cmdHandler: &CommandHandler{
+			db:     db,
+			logger: logger,
+		},
 	}
+	if len(games) > 0 {
+		bot.game = games[0]
+		bot.cmdHandler.rowHandler.Game = games[0]
+	}
+
+	return bot
 }
