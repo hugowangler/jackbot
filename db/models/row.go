@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/lib/pq"
@@ -17,4 +18,20 @@ type Row struct {
 	UserId       string
 	User         User
 	Paid         bool
+}
+
+func (r *Row) NumbersToString() string {
+	var res string
+	for _, b := range r.Numbers {
+		res += fmt.Sprintf("%d ", b)
+	}
+	return res
+}
+
+func (r *Row) BonusNumbersToString() string {
+	var res string
+	for _, b := range r.BonusNumbers {
+		res += fmt.Sprintf("%d ", b)
+	}
+	return res
 }

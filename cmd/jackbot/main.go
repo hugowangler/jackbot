@@ -3,15 +3,16 @@ package main
 import (
 	cryptorand "crypto/rand"
 	"encoding/binary"
-	"github.com/joho/godotenv"
+	"jackbot/db"
+	"jackbot/db/models"
 	"jackbot/internal/bot"
-	"jackbot/internal/game"
 	"jackbot/internal/utils"
 	mathrand "math/rand"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -30,46 +31,10 @@ func main() {
 		logger.Fatal("missing required environment variable BOT_PREFIX")
 	}
 
-	envBalls := os.Getenv("BALLS")
-	if prefix == "" {
-		logger.Fatal("missing required environment variable BALLS")
-	}
-	balls, err := strconv.Atoi(envBalls)
+	db, err := db.NewConn()
 	if err != nil {
-		logger.Fatal("BALLS environment variable was not a number")
+		logger.With("error", err).Fatal("failed to connect to db")
 	}
-
-	envBonus := os.Getenv("BONUS")
-	if prefix == "" {
-		logger.Fatal("missing required environment variable BONUS")
-	}
-	bonus, err := strconv.Atoi(envBonus)
-	if err != nil {
-		logger.Fatal("BONUS environment variable was not a number")
-	}
-
-	envBallsRange := os.Getenv("BALLS_RANGE")
-	if prefix == "" {
-		logger.Fatal("missing required environment variable BALLS_RANGE")
-	}
-	ballsRange, err := strconv.Atoi(envBallsRange)
-	if err != nil {
-		logger.Fatal("BALLS_RANGE environment variable was not a number")
-	}
-
-	envBonusRange := os.Getenv("BONUS_RANGE")
-	if prefix == "" {
-		logger.Fatal("missing required environment variable BONUS_RANGE")
-	}
-	bonusRange, err := strconv.Atoi(envBonusRange)
-	if err != nil {
-		logger.Fatal("BONUS_RANGE environment variable was not a number")
-	}
-
-	// db, err := db.NewConn()
-	// if err != nil {
-	// 	logger.With("error", err).Fatal("failed to connect to db")
-	// }
 
 	var b [8]byte
 	_, err = cryptorand.Read(b[:])
@@ -78,14 +43,13 @@ func main() {
 	}
 	mathrand.Seed(int64(binary.LittleEndian.Uint64(b[:])))
 
-	g := game.Game{
-		Balls:      balls,
-		BallsRange: ballsRange,
-		Bonus:      bonus,
-		BonusRange: bonusRange,
+	var games []models.Game
+	res := db.Where("active", true).Find(&games)
+	if res.Error != nil {
+		logger.With("error", res.Error).Fatal("failed to get games from db")
 	}
 
-	jackbot := bot.NewBot(token, prefix, &g, logger)
+	jackbot := bot.NewBot(token, prefix, games, logger, db)
 	err = jackbot.Start()
 	if err != nil {
 		logger.With("error", err).Fatal("failed to start jackbot")

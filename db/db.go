@@ -2,9 +2,10 @@ package db
 
 import (
 	"fmt"
+	"os"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"os"
 )
 
 type MissingEnvVarsError struct {
@@ -49,9 +50,9 @@ func getDSN() (string, error) {
 	if !ok {
 		missingEnvVars = append(missingEnvVars, "POSTGRES_USER")
 	}
-	database, ok := os.LookupEnv("POSTGRES_DATABASE")
+	database, ok := os.LookupEnv("POSTGRES_DB")
 	if !ok {
-		missingEnvVars = append(missingEnvVars, "POSTGRES_DATABASE")
+		missingEnvVars = append(missingEnvVars, "POSTGRES_DB")
 	}
 	if len(missingEnvVars) != 0 {
 		return "", &MissingEnvVarsError{Vars: missingEnvVars}
@@ -64,5 +65,6 @@ func getDSN() (string, error) {
 	if passwordOk {
 		url += fmt.Sprintf(" password=%s", password)
 	}
+
 	return url, nil
 }
