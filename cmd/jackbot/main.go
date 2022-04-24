@@ -6,7 +6,7 @@ import (
 	"github.com/joho/godotenv"
 	"jackbot/internal/bot"
 	"jackbot/internal/game"
-	"jackbot/utils"
+	"jackbot/internal/utils"
 	mathrand "math/rand"
 	"os"
 	"os/signal"
@@ -65,6 +65,11 @@ func main() {
 	if err != nil {
 		logger.Fatal("BONUS_RANGE environment variable was not a number")
 	}
+
+	// db, err := db.NewConn()
+	// if err != nil {
+	// 	logger.With("error", err).Fatal("failed to connect to db")
+	// }
 
 	var b [8]byte
 	_, err = cryptorand.Read(b[:])
