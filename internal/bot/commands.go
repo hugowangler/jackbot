@@ -2,7 +2,7 @@ package bot
 
 import (
 	"fmt"
-	"jackbot/game"
+	"jackbot/internal/game"
 	"strings"
 )
 

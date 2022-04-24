@@ -3,7 +3,7 @@ package bot
 import (
 	"github.com/bwmarrin/discordgo"
 	"go.uber.org/zap"
-	"jackbot/game"
+	"jackbot/internal/game"
 	"strings"
 )
 
