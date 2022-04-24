@@ -23,7 +23,7 @@ func StartTestDb(s *suite.Suite) testcontainers.Container {
 	ctx := context.Background()
 	req := testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
-			Image:        "postgres:latest",
+			Image:        "postgres:14",
 			ExposedPorts: []string{port},
 			Env:          env,
 			WaitingFor:   wait.ForLog(gormDbReadyMsg).WithPollInterval(100 * time.Millisecond).WithOccurrence(2),

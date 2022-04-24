@@ -65,5 +65,6 @@ func getDSN() (string, error) {
 	if passwordOk {
 		url += fmt.Sprintf(" password=%s", password)
 	}
+
 	return url, nil
 }

@@ -2,6 +2,7 @@ package bot
 
 import (
 	"context"
+	"fmt"
 	"jackbot/db"
 	"jackbot/internal/utils"
 	"jackbot/test"
@@ -23,13 +24,20 @@ type CommandsTS struct {
 
 func (s *CommandsTS) SetupSuite() {
 	s.testDbContainer = test.StartTestDb(&s.Suite)
-	host, err := s.testDbContainer.ContainerIP(context.Background())
+	host, err := s.testDbContainer.Host(context.Background())
 	if err != nil {
 		panic(err)
 	}
 
+	port, err := s.testDbContainer.MappedPort(context.Background(), "5432")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(host)
+
 	os.Setenv("POSTGRES_HOST", host)
-	os.Setenv("POSTGRES_PORT", "5432")
+	os.Setenv("POSTGRES_PORT", port.Port())
 	os.Setenv("POSTGRES_DB", "test")
 	os.Setenv("POSTGRES_USER", "test")
 	os.Setenv("POSTGRES_PASSWORD", "test")
