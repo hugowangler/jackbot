@@ -1,7 +1,6 @@
 package game
 
 import (
-	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -12,12 +11,6 @@ var mockGame = Game{
 	Bonus:      2,
 	BonusRange: 5,
 }
-
-var rowCmpOpt = cmp.Comparer(
-	func(x, y Row) bool {
-		return cmp.Diff(x.Balls, y.Balls) == "" && cmp.Diff(x.Bonus, y.Bonus) == ""
-	},
-)
 
 func TestGame_ParseRow(t *testing.T) {
 	tests := []struct {
@@ -148,7 +141,6 @@ func TestGame_ParseRow(t *testing.T) {
 				if (err != nil) != tt.expErr {
 					t.Errorf("Game.ParseRow() error = %v, expError=%v", err, tt.expErr)
 				}
-				// assert.True(t, cmp.Equal(tt.exp, actual, rowCmpOpt))
 				assert.Equal(t, tt.exp, actual)
 			},
 		)
