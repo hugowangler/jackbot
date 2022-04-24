@@ -22,11 +22,11 @@ type CommandHandler struct {
 func (c *CommandHandler) HandleInput(input string) string {
 	switch {
 	case strings.HasPrefix(input, "!join"):
-		row, err := c.handleJoin(input)
+		dbRow, err := c.handleJoin(input)
 		if err != nil {
 			return err.Error()
 		}
-		return row.NumbersToString()
+		return dbRow.NumbersToString()
 	case strings.HasPrefix(input, "!creategame"):
 		game, err := c.handleCreateGame(input)
 		if err != nil {
@@ -40,28 +40,28 @@ func (c *CommandHandler) HandleInput(input string) string {
 func (c *CommandHandler) handleJoin(msg string) (models.Row, error) {
 	msg = strings.TrimSpace(strings.TrimPrefix(msg, "!join"))
 
-	var row models.Row
+	var dbRow models.Row
 	var err error
 
 	switch msg {
 	case "":
 		return models.Row{}, fmt.Errorf("help me")
 	case "random":
-		row = c.rowHandler.GetRandomRow()
+		dbRow = c.rowHandler.GetRandomRow()
 	default:
-		row, err = c.rowHandler.ParseRow(msg)
+		dbRow, err = c.rowHandler.ParseRow(msg)
 		if err != nil {
 			return models.Row{}, err
 		}
 	}
 
-	res := c.db.Create(&row)
+	res := c.db.Create(&dbRow)
 	if res.Error != nil {
 		err = utils.LogServerError(err, c.logger)
 		return models.Row{}, err
 	}
 
-	return row, nil
+	return dbRow, nil
 }
 
 func (c *CommandHandler) handleCreateGame(msg string) (models.Game, error) {

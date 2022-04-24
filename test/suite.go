@@ -43,6 +43,6 @@ func RunMigrations(db *gorm.DB) error {
 }
 
 func CleanTestDb(db *gorm.DB) error {
-	res := db.Exec("DELETE FROM rows, raffles, users, games;")
+	res := db.Exec("DELETE FROM rows;DELETE FROM raffles;DELETE FROM users;DELETE FROM games;")
 	return res.Error
 }

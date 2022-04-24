@@ -34,11 +34,11 @@ func (s *CommandsTS) SetupSuite() {
 	os.Setenv("POSTGRES_USER", "test")
 	os.Setenv("POSTGRES_PASSWORD", "test")
 
-	db, err := db.NewConn()
+	dbConn, err := db.NewConn()
 	if err != nil {
 		panic(err)
 	}
-	s.db = db
+	s.db = dbConn
 
 	err = test.RunMigrations(s.db)
 	if err != nil {
@@ -72,7 +72,7 @@ func (s *CommandsTS) TestCommands_HandleInput_CreateGame() {
 	}{
 		{
 			name:  "valid create game command",
-			input: "!createGame --name=Jacken --numbers=5 --numbersrange=50 --bonusnumbers=2 --bonusrange=12 --entryfee=5",
+			input: "!creategame --name=jacken --numbers=5 --numbersrange=50 --bonusnumbers=2 --bonusrange=12 --entryfee=5",
 			exp:   "game created: jacken",
 		},
 	}
