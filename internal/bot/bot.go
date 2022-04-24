@@ -55,16 +55,7 @@ func (b *Bot) messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	var response string
-	switch {
-	case strings.HasPrefix(msg, "!join"):
-		row, errMsg := handleJoin(msg, b.game)
-		if errMsg != "" {
-			response += errMsg
-		}
-		response += row.Format()
-	}
-
+	response := HandleInput(msg, b.game)
 	if response != "" {
 		_, err := s.ChannelMessageSend(m.ChannelID, response)
 		if err != nil {
