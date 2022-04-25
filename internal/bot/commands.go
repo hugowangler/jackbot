@@ -18,7 +18,7 @@ type CommandHandler struct {
 	rowHandler *row.Handler
 }
 
-func (c *CommandHandler) HandleInput(input string) string {
+func (c *CommandHandler) HandleInput(input string, authorId string) string {
 	switch {
 	case strings.HasPrefix(input, "!join"):
 		dbRow, err := c.handleJoin(input)
@@ -27,6 +27,14 @@ func (c *CommandHandler) HandleInput(input string) string {
 		}
 		return dbRow.NumbersToString()
 	case strings.HasPrefix(input, "!creategame"):
+		hasPermission, err := models.HasPermissions(authorId, []int{models.MasterAdmin}, c.db)
+		if err != nil {
+			return utils.LogServerError(err, c.logger).Error()
+		}
+		if !hasPermission {
+			return "you don't have permission to do this action"
+		}
+
 		game, err := c.handleCreateGame(input)
 		if err != nil {
 			return err.Error()
@@ -72,8 +80,6 @@ func (c *CommandHandler) handleCreateGame(msg string) (models.Game, error) {
 
 	args := ParseArguments(msg)
 
-	c.logger.Debug("args", args)
-
 	game.Name, exists = args["name"]
 	if !exists {
 		return models.Game{}, fmt.Errorf("name is required")
@@ -83,7 +89,6 @@ func (c *CommandHandler) handleCreateGame(msg string) (models.Game, error) {
 	if !exists {
 		return models.Game{}, fmt.Errorf("numbers is required")
 	}
-	c.logger.Debug(strNumbers)
 	game.Numbers, err = strconv.Atoi(strNumbers)
 	if err != nil {
 		return models.Game{}, fmt.Errorf("numbers must be an integer")
