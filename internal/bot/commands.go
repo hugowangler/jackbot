@@ -26,6 +26,12 @@ func (c *CommandHandler) HandleInput(input string, authorId string) string {
 			return err.Error()
 		}
 		return dbRow.NumbersToString()
+	case strings.HasPrefix(input, "!createraffle"):
+		raffle, err := c.handleCreateRaffle(input)
+		if err != nil {
+			return err.Error()
+		}
+		return fmt.Sprintf("Raffle created: %s", raffle.GameId)
 	case strings.HasPrefix(input, "!creategame"):
 		hasPermission, err := models.HasPermissions(authorId, []int{models.MasterAdmin}, c.db)
 		if err != nil {
@@ -69,6 +75,26 @@ func (c *CommandHandler) handleJoin(msg string) (models.Row, error) {
 	}
 
 	return dbRow, nil
+}
+
+func (c *CommandHandler) handleCreateRaffle(msg string) (models.Raffle, error) {
+	msg = strings.TrimSpace(strings.TrimPrefix(msg, "!createraffle"))
+
+	var raffle models.Raffle
+	// var err error
+	// var exists bool
+
+	// args := ParseArguments(msg)
+
+	// Set the game to the raffle
+	// raffle.GameId = c.rowHandler.
+
+	raffle.GameId = 1
+	// raffle.GameId, exists = args["name"]
+	// if !exists {
+	// 	return models.Game{}, fmt.Errorf("name is required")
+	// }
+	return raffle, nil
 }
 
 func (c *CommandHandler) handleCreateGame(msg string) (models.Game, error) {
