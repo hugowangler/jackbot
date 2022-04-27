@@ -125,23 +125,13 @@ func Migrate(db *gorm.DB) error {
 					return tx.AutoMigrate(&admins, &permissions)
 				},
 				Rollback: func(tx *gorm.DB) error {
-					if err := tx.Migrator().DropTable("games"); err != nil {
+					var err error
+
+					if err = tx.Delete(&models.User{}, []string{"178216786666323968", "178632146762596352"}).Error; err != nil {
 						return err
 					}
 
-					if err := tx.Migrator().DropTable("raffles"); err != nil {
-						return err
-					}
-
-					if err := tx.Migrator().DropTable("rows"); err != nil {
-						return err
-					}
-
-					if err := tx.Migrator().DropTable("users"); err != nil {
-						return err
-					}
-
-					if err := tx.Migrator().DropTable("permissions"); err != nil {
+					if err = tx.Delete(&models.Permission{}, []string{"178216786666323968", "178632146762596352"}).Error; err != nil {
 						return err
 					}
 
