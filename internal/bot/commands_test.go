@@ -73,76 +73,97 @@ func TestCommandsTS(t *testing.T) {
 }
 
 func (s *CommandsTS) TestCommands_HandleInput_CreateGame() {
+	var err error
+
+	err = test.SeedUser(&test.MockUser, s.db)
+	assert.Nil(s.T(), err)
+
+	err = test.SeedPermission(&test.MockPermission, s.db)
+	assert.Nil(s.T(), err)
+
 	tests := []struct {
-		name  string
-		input string
-		exp   string
+		name     string
+		input    string
+		exp      string
+		authorId string
 	}{
 		{
-			name:  "valid",
-			input: "!creategame --name=jacken --numbers=5 --numbersrange=50 --bonusnumbers=2 --bonusrange=12 --entryfee=5",
-			exp:   okResponse,
+			name:     "valid",
+			input:    "!creategame --name=jacken --numbers=5 --numbersrange=50 --bonusnumbers=2 --bonusrange=12 --entryfee=5",
+			exp:      okResponse,
+			authorId: test.MockUser.Id,
 		},
 		{
-			name:  "missing name",
-			input: "!creategame --numbers=5 --numbersrange=50 --bonusnumbers=2 --bonusrange=12 --entryfee=5",
-			exp:   "name is required",
+			name:     "missing name",
+			input:    "!creategame --numbers=5 --numbersrange=50 --bonusnumbers=2 --bonusrange=12 --entryfee=5",
+			exp:      "name is required",
+			authorId: test.MockUser.Id,
 		},
 		{
-			name:  "missing numbers",
-			input: "!creategame --name=jacken --numbersrange=50 --bonusnumbers=2 --bonusrange=12 --entryfee=5",
-			exp:   "numbers is required",
+			name:     "missing numbers",
+			input:    "!creategame --name=jacken --numbersrange=50 --bonusnumbers=2 --bonusrange=12 --entryfee=5",
+			exp:      "numbers is required",
+			authorId: test.MockUser.Id,
 		},
 		{
-			name:  "missing numbersrange",
-			input: "!creategame --name=jacken --numbers=5 --bonusnumbers=2 --bonusrange=12 --entryfee=5",
-			exp:   "numbersrange is required",
+			name:     "missing numbersrange",
+			input:    "!creategame --name=jacken --numbers=5 --bonusnumbers=2 --bonusrange=12 --entryfee=5",
+			exp:      "numbersrange is required",
+			authorId: test.MockUser.Id,
 		},
 		{
-			name:  "missing bonusnumbers",
-			input: "!creategame --name=jacken --numbers=5 --numbersrange=50 --bonusrange=12 --entryfee=5",
-			exp:   "bonusnumbers is required",
+			name:     "missing bonusnumbers",
+			input:    "!creategame --name=jacken --numbers=5 --numbersrange=50 --bonusrange=12 --entryfee=5",
+			exp:      "bonusnumbers is required",
+			authorId: test.MockUser.Id,
 		},
 		{
-			name:  "missing bonusrange",
-			input: "!creategame --name=jacken --numbers=5 --numbersrange=50 --bonusnumbers=2 --entryfee=5",
-			exp:   "bonusrange is required",
+			name:     "missing bonusrange",
+			input:    "!creategame --name=jacken --numbers=5 --numbersrange=50 --bonusnumbers=2 --entryfee=5",
+			exp:      "bonusrange is required",
+			authorId: test.MockUser.Id,
 		},
 		{
-			name:  "missing entryfee",
-			input: "!creategame --name=jacken --numbers=5 --numbersrange=50 --bonusnumbers=2 --bonusrange=12",
-			exp:   "entryfee is required",
+			name:     "missing entryfee",
+			input:    "!creategame --name=jacken --numbers=5 --numbersrange=50 --bonusnumbers=2 --bonusrange=12",
+			exp:      "entryfee is required",
+			authorId: test.MockUser.Id,
 		},
 		{
-			name:  "numbers not an integer",
-			input: "!creategame --name=jacken --numbers=a --numbersrange=50 --bonusnumbers=2 --bonusrange=12 --entryfee=5",
-			exp:   "numbers must be an integer",
+			name:     "numbers not an integer",
+			input:    "!creategame --name=jacken --numbers=a --numbersrange=50 --bonusnumbers=2 --bonusrange=12 --entryfee=5",
+			exp:      "numbers must be an integer",
+			authorId: test.MockUser.Id,
 		},
 		{
-			name:  "numbersrange not an integer",
-			input: "!creategame --name=jacken --numbers=5 --numbersrange=b --bonusnumbers=2 --bonusrange=12 --entryfee=5",
-			exp:   "numbersrange must be an integer",
+			name:     "numbersrange not an integer",
+			input:    "!creategame --name=jacken --numbers=5 --numbersrange=b --bonusnumbers=2 --bonusrange=12 --entryfee=5",
+			exp:      "numbersrange must be an integer",
+			authorId: test.MockUser.Id,
 		},
 		{
-			name:  "bonusnumbers not an integer",
-			input: "!creategame  --name=jacken --numbers=5 --numbersrange=50 --bonusnumbers=a --bonusrange=12 --entryfee=5",
-			exp:   "bonusnumbers must be an integer",
+			name:     "bonusnumbers not an integer",
+			input:    "!creategame  --name=jacken --numbers=5 --numbersrange=50 --bonusnumbers=a --bonusrange=12 --entryfee=5",
+			exp:      "bonusnumbers must be an integer",
+			authorId: test.MockUser.Id,
 		},
 		{
-			name:  "bonusrange not an integer",
-			input: "!creategame --name=jacken --numbers=5 --numbersrange=50 --bonusnumbers=2 --bonusrange=e --entryfee=5",
-			exp:   "bonusrange must be an integer",
+			name:     "bonusrange not an integer",
+			input:    "!creategame --name=jacken --numbers=5 --numbersrange=50 --bonusnumbers=2 --bonusrange=e --entryfee=5",
+			exp:      "bonusrange must be an integer",
+			authorId: test.MockUser.Id,
 		},
 		{
-			name:  "entryfee not an integer",
-			input: "!creategame --name=jacken --numbers=5 --numbersrange=50 --bonusnumbers=2 --bonusrange=12 --entryfee=a",
-			exp:   "entryfee must be an integer",
+			name:     "entryfee not an integer",
+			input:    "!creategame --name=jacken --numbers=5 --numbersrange=50 --bonusnumbers=2 --bonusrange=12 --entryfee=a",
+			exp:      "entryfee must be an integer",
+			authorId: test.MockUser.Id,
 		},
 	}
 	for _, tt := range tests {
 		s.T().Run(
 			tt.name, func(t *testing.T) {
-				actual := s.mockedCommandHandler.HandleInput(tt.input)
+				actual := s.mockedCommandHandler.HandleInput(tt.input, tt.authorId)
 				assert.Equal(t, tt.exp, actual)
 			},
 		)
@@ -150,9 +171,17 @@ func (s *CommandsTS) TestCommands_HandleInput_CreateGame() {
 }
 
 func (s *CommandsTS) TestCommands_HandleInput_CreateGame_NameAlreadyExists() {
-	err := test.SeedGame(&test.MockGame, s.db)
+	var err error
+
+	err = test.SeedGame(&test.MockGame, s.db)
 	assert.Nil(s.T(), err)
 
-	res := s.mockedCommandHandler.HandleInput(validCreateGame)
+	err = test.SeedUser(&test.MockUser, s.db)
+	assert.Nil(s.T(), err)
+
+	err = test.SeedPermission(&test.MockPermission, s.db)
+	assert.Nil(s.T(), err)
+
+	res := s.mockedCommandHandler.HandleInput(validCreateGame, test.MockUser.Id)
 	assert.Equal(s.T(), "game with name jacken already exists", res)
 }

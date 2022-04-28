@@ -2,6 +2,7 @@ package bot
 
 import (
 	"jackbot/db/models"
+	"jackbot/internal/row"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -58,7 +59,7 @@ func (b *Bot) messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	response := b.cmdHandler.HandleInput(msg)
+	response := b.cmdHandler.HandleInput(msg, m.Author.ID)
 	if response != "" {
 		_, err := s.ChannelMessageSend(m.ChannelID, response)
 		if err != nil {
@@ -73,8 +74,9 @@ func NewBot(token string, prefix string, games []models.Game, logger *zap.Sugare
 		prefix: prefix,
 		logger: logger,
 		cmdHandler: &CommandHandler{
-			db:     db,
-			logger: logger,
+			db:         db,
+			logger:     logger,
+			rowHandler: &row.Handler{},
 		},
 	}
 	if len(games) > 0 {

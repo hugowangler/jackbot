@@ -1,8 +1,9 @@
 package test
 
 import (
-	"gorm.io/gorm"
 	"jackbot/db/models"
+
+	"gorm.io/gorm"
 )
 
 var MockGame = models.Game{

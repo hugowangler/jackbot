@@ -14,6 +14,6 @@ func LogServerError(err error, logger *zap.SugaredLogger) error {
 		return nil
 	}
 
-	logger.With("error", err).Warn("error creating game")
+	logger.With("error", err).Warn("something went wrong")
 	return &InternalServerError{}
 }
