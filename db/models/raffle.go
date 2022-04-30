@@ -27,7 +27,10 @@ type Raffle struct {
 
 func CreateRaffle(raffle *Raffle, db *gorm.DB) error {
 	existingRaffle := []Raffle{}
-	if err := db.Where("date IS NULL AND game_id = ?", raffle.GameId).Preload("Game").Find(&existingRaffle).Error; err != nil {
+	if err := db.Where(
+		"date IS NULL AND game_id = ?",
+		raffle.GameId,
+	).Preload("Game").Find(&existingRaffle).Error; err != nil {
 		return err
 	}
 
@@ -36,4 +39,12 @@ func CreateRaffle(raffle *Raffle, db *gorm.DB) error {
 	}
 
 	return db.Create(raffle).Error
+}
+
+func GetRaffle(game *Game, db *gorm.DB) (*Raffle, error) {
+	var raffle Raffle
+	if err := db.Where("date IS NULL AND game_id = ?", game.Id).First(&raffle).Error; err != nil {
+		return nil, err
+	}
+	return &raffle, nil
 }

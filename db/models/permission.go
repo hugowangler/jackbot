@@ -13,7 +13,8 @@ type Permission struct {
 }
 
 const (
-	MasterAdmin = iota + 1
+	PERMISSION_DEFAULT = iota
+	PERMISSION_ADMIN   = iota
 )
 
 func HasPermissions(userId string, permissions []int, db *gorm.DB) (bool, error) {

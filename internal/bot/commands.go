@@ -28,25 +28,26 @@ func (c *CommandHandler) HandleInput(input string, authorId string) string {
 		}
 		return dbRow.NumbersToString()
 	case strings.HasPrefix(input, "!createraffle"):
-		raffle, err := c.handleCreateRaffle(input)
+		raffle, err := c.handleCreateRaffle()
 		if err != nil {
 			return err.Error()
 		}
 		return fmt.Sprintf("Raffle created: %d", raffle.GameId)
 	case strings.HasPrefix(input, "!creategame"):
-		hasPermission, err := models.HasPermissions(authorId, []int{models.MasterAdmin}, c.db)
+		err := c.checkPermissions(authorId, []int{models.PERMISSION_ADMIN})
 		if err != nil {
-			return utils.LogServerError(err, c.logger).Error()
+			return err.Error()
 		}
-		if !hasPermission {
-			return "you don't have permission to do this action"
-		}
-
 		game, err := c.handleCreateGame(input)
 		if err != nil {
 			return err.Error()
 		}
 		return fmt.Sprintf("game created: %s", game.Name)
+	case strings.HasPrefix(input, "!raffle"):
+		err := c.checkPermissions(authorId, []int{models.PERMISSION_ADMIN})
+		if err != nil {
+			return err.Error()
+		}
 	}
 	return ""
 }
@@ -78,7 +79,7 @@ func (c *CommandHandler) handleJoin(msg string) (models.Row, error) {
 	return dbRow, nil
 }
 
-func (c *CommandHandler) handleCreateRaffle(msg string) (models.Raffle, error) {
+func (c *CommandHandler) handleCreateRaffle() (models.Raffle, error) {
 	var raffle models.Raffle
 
 	raffle.GameId = c.game.Id
@@ -169,6 +170,26 @@ func (c *CommandHandler) handleCreateGame(msg string) (models.Game, error) {
 	}
 
 	return game, nil
+}
+
+func (c *CommandHandler) handleRaffle() error {
+	raffle, err := models.GetRaffle(c.game, c.db)
+	if err != nil {
+		return utils.LogServerError(err, c.logger)
+	}
+	winningRow := c.rowHandler.GetRandomRow()
+	return nil
+}
+
+func (c *CommandHandler) checkPermissions(authorId string, perms []int) error {
+	hasPermission, err := models.HasPermissions(authorId, perms, c.db)
+	if err != nil {
+		return utils.LogServerError(err, c.logger)
+	}
+	if !hasPermission {
+		return fmt.Errorf("you don't have permission to do this action")
+	}
+	return nil
 }
 
 func NewCmdHandler(
