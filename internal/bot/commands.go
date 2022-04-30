@@ -94,7 +94,8 @@ func (c *CommandHandler) handleJoin(msg string, userId string) (models.Row, erro
 
 	user, err := models.GetUser(userId, c.db)
 	if err != nil {
-		utils.LogServerError(err, c.logger)
+		err = utils.LogServerError(err, c.logger)
+		return models.Row{}, err
 	}
 	if user == nil {
 		user = &models.User{
@@ -227,20 +228,14 @@ func (c *CommandHandler) handleCreateGame(msg string) (models.Game, error) {
 func (c *CommandHandler) handleSetupUser(msg string, userId string) (models.User, error) {
 	msg = strings.TrimSpace(strings.TrimPrefix(msg, "!setup"))
 
-	user := &models.User{}
 	var err error
 	var exists bool
 
-	user, err = models.GetUser(userId, c.db)
+	user, err := models.GetUser(userId, c.db)
 	if err != nil {
-		if err, ok := err.(*models.GameAlreadyExistsError); ok {
-			return models.User{}, err
-		}
-
 		err = utils.LogServerError(err, c.logger)
 		return models.User{}, err
 	}
-
 	if user == nil {
 		user = &models.User{
 			Id: userId,
