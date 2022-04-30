@@ -2,13 +2,14 @@ package bot
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"jackbot/db"
 	"jackbot/internal/row"
 	"jackbot/internal/utils"
 	"jackbot/test"
 	"os"
 	"testing"
+
+	"go.uber.org/zap"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -176,10 +177,10 @@ func (s *CommandsTS) TestCommands_HandleInput_CreateGame() {
 func (s *CommandsTS) TestCommands_HandleInput_CreateGame_NameAlreadyExists() {
 	var err error
 
-	err = test.SeedGame(&test.MockGame, s.db)
+	err = test.SeedUser(&test.MockUser, s.db)
 	assert.Nil(s.T(), err)
 
-	err = test.SeedUser(&test.MockUser, s.db)
+	err = test.SeedGame(&test.MockGame, s.db)
 	assert.Nil(s.T(), err)
 
 	err = test.SeedPermission(&test.MockPermission, s.db)
