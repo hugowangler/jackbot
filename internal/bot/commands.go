@@ -233,7 +233,12 @@ func (c *CommandHandler) handleSetupUser(msg string, userId string) (models.User
 
 	user, err = models.GetUser(userId, c.db)
 	if err != nil {
-		utils.LogServerError(err, c.logger)
+		if err, ok := err.(*models.GameAlreadyExistsError); ok {
+			return models.User{}, err
+		}
+
+		err = utils.LogServerError(err, c.logger)
+		return models.User{}, err
 	}
 
 	if user == nil {
