@@ -11,7 +11,7 @@ import (
 const separator = "-"
 
 type Handler struct {
-	models.Game
+	*models.Game
 }
 
 type InvalidRowError struct {

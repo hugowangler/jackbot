@@ -12,7 +12,7 @@ import (
 
 type Bot struct {
 	logger     *zap.SugaredLogger
-	game       models.Game
+	game       *models.Game
 	userId     string
 	session    *discordgo.Session
 	token      string
@@ -68,22 +68,19 @@ func (b *Bot) messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 }
 
-func NewBot(token string, prefix string, games []models.Game, logger *zap.SugaredLogger, db *gorm.DB) *Bot {
+func NewBot(token string, prefix string, game *models.Game, logger *zap.SugaredLogger, db *gorm.DB) *Bot {
 	bot := &Bot{
-		token:  token,
-		prefix: prefix,
-		logger: logger,
-		cmdHandler: &CommandHandler{
-			db:         db,
-			logger:     logger,
-			rowHandler: &row.Handler{},
-		},
+		token:      token,
+		prefix:     prefix,
+		logger:     logger,
+		game:       nil,
+		cmdHandler: nil,
 	}
-	if len(games) > 0 {
-		bot.game = games[0]
-		bot.cmdHandler.game = games[0]
-		bot.cmdHandler.rowHandler.Game = games[0]
+	if game != nil {
+		bot.game = game
+		bot.cmdHandler = NewCmdHandler(db, logger, WithGame(game), WithRowHandler(&row.Handler{Game: game}))
+	} else {
+		bot.cmdHandler = NewCmdHandler(db, logger)
 	}
-
 	return bot
 }
