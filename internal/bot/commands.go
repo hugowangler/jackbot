@@ -16,6 +16,7 @@ type CommandHandler struct {
 	db         *gorm.DB
 	logger     *zap.SugaredLogger
 	rowHandler *row.Handler
+	game       models.Game
 }
 
 func (c *CommandHandler) HandleInput(input string, authorId string) string {
@@ -31,7 +32,7 @@ func (c *CommandHandler) HandleInput(input string, authorId string) string {
 		if err != nil {
 			return err.Error()
 		}
-		return fmt.Sprintf("Raffle created: %s", raffle.GameId)
+		return fmt.Sprintf("Raffle created: %d", raffle.GameId)
 	case strings.HasPrefix(input, "!creategame"):
 		hasPermission, err := models.HasPermissions(authorId, []int{models.MasterAdmin}, c.db)
 		if err != nil {
@@ -78,22 +79,21 @@ func (c *CommandHandler) handleJoin(msg string) (models.Row, error) {
 }
 
 func (c *CommandHandler) handleCreateRaffle(msg string) (models.Raffle, error) {
-	msg = strings.TrimSpace(strings.TrimPrefix(msg, "!createraffle"))
-
 	var raffle models.Raffle
-	// var err error
-	// var exists bool
 
-	// args := ParseArguments(msg)
+	raffle.GameId = c.game.Id
 
-	// Set the game to the raffle
-	// raffle.GameId = c.rowHandler.
+	err := models.CreateRaffle(&raffle, c.db)
 
-	raffle.GameId = 1
-	// raffle.GameId, exists = args["name"]
-	// if !exists {
-	// 	return models.Game{}, fmt.Errorf("name is required")
-	// }
+	if err != nil {
+		if err, ok := err.(*models.PreviousRaffleNotCompletedError); ok {
+			return models.Raffle{}, err
+		}
+
+		err = utils.LogServerError(err, c.logger)
+		return models.Raffle{}, err
+	}
+
 	return raffle, nil
 }
 

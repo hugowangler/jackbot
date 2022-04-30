@@ -22,17 +22,17 @@ type Raffle struct {
 	GameId       uint64
 	Game         Game
 	WinningRowId uint64
-	Date         time.Time
+	Date         *time.Time
 }
 
 func CreateRaffle(raffle *Raffle, db *gorm.DB) error {
-	existingRaffle := &Raffle{}
-	if err := db.Where("date = ? AND game_id = ?", nil, raffle.GameId).First(existingRaffle).Error; err != nil {
+	existingRaffle := []Raffle{}
+	if err := db.Where("date IS NULL AND game_id = ?", raffle.GameId).Preload("Game").Find(&existingRaffle).Error; err != nil {
 		return err
 	}
 
-	if existingRaffle != nil {
-		return &PreviousRaffleNotCompletedError{name: existingRaffle.Game.Name}
+	if len(existingRaffle) > 0 {
+		return &PreviousRaffleNotCompletedError{name: existingRaffle[0].Game.Name}
 	}
 
 	return db.Create(raffle).Error

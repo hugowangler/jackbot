@@ -81,6 +81,7 @@ func NewBot(token string, prefix string, games []models.Game, logger *zap.Sugare
 	}
 	if len(games) > 0 {
 		bot.game = games[0]
+		bot.cmdHandler.game = games[0]
 		bot.cmdHandler.rowHandler.Game = games[0]
 	}
 
