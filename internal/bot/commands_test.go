@@ -2,7 +2,9 @@ package bot
 
 import (
 	"context"
+	"go.uber.org/zap"
 	"jackbot/db"
+	"jackbot/internal/row"
 	"jackbot/internal/utils"
 	"jackbot/test"
 	"os"
@@ -23,6 +25,7 @@ type CommandsTS struct {
 	testDbContainer      testcontainers.Container
 	db                   *gorm.DB
 	mockedCommandHandler *CommandHandler
+	logger               *zap.SugaredLogger
 }
 
 func (s *CommandsTS) SetupSuite() {
@@ -53,11 +56,11 @@ func (s *CommandsTS) SetupSuite() {
 		panic(err)
 	}
 
-	logger := utils.NewLogger()
+	s.logger = utils.NewLogger()
 
 	s.mockedCommandHandler = &CommandHandler{
 		db:     s.db,
-		logger: logger,
+		logger: s.logger,
 	}
 }
 
@@ -184,4 +187,25 @@ func (s *CommandsTS) TestCommands_HandleInput_CreateGame_NameAlreadyExists() {
 
 	res := s.mockedCommandHandler.HandleInput(validCreateGame, test.MockUser.Id)
 	assert.Equal(s.T(), "game with name jacken already exists", res)
+}
+
+func (s *CommandsTS) TestCommands_NewCmdHandler() {
+	cmd := NewCmdHandler(s.db, s.logger)
+	assert.NotNil(s.T(), cmd)
+	assert.Nil(s.T(), cmd.rowHandler)
+	assert.Nil(s.T(), cmd.game)
+}
+
+func (s *CommandsTS) TestCommands_NewCmdHandler_WithGame() {
+	cmd := NewCmdHandler(s.db, s.logger, WithGame(&test.MockGame))
+	assert.NotNil(s.T(), cmd)
+	assert.Nil(s.T(), cmd.rowHandler)
+	assert.NotNil(s.T(), cmd.game)
+}
+
+func (s *CommandsTS) TestCommands_NewCmdHandler_WithRowHandler() {
+	cmd := NewCmdHandler(s.db, s.logger, WithRowHandler(&row.Handler{}))
+	assert.NotNil(s.T(), cmd)
+	assert.NotNil(s.T(), cmd.rowHandler)
+	assert.Nil(s.T(), cmd.game)
 }
