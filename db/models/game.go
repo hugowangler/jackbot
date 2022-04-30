@@ -27,6 +27,8 @@ type Game struct {
 	BonusRange   int
 	EntryFee     int
 	Active       bool
+	AccountantId string
+	Accountant   User
 }
 
 func CreateGame(game *Game, db *gorm.DB) error {
@@ -40,4 +42,13 @@ func CreateGame(game *Game, db *gorm.DB) error {
 	}
 
 	return db.Create(game).Error
+}
+
+func GetAccountant(game *Game, db *gorm.DB) (*User, error) {
+	var accountant *User
+	if err := db.Where("Id = ?", game.AccountantId).First(&accountant).Error; err != nil {
+		return nil, err
+	}
+
+	return accountant, nil
 }

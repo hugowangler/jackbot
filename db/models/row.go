@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/lib/pq"
@@ -25,7 +26,7 @@ func (r *Row) NumbersToString() string {
 	for _, b := range r.Numbers {
 		res += fmt.Sprintf("%d ", b)
 	}
-	return res
+	return strings.TrimSpace(res)
 }
 
 func (r *Row) BonusNumbersToString() string {
@@ -33,5 +34,5 @@ func (r *Row) BonusNumbersToString() string {
 	for _, b := range r.BonusNumbers {
 		res += fmt.Sprintf("%d ", b)
 	}
-	return res
+	return strings.TrimSpace(res)
 }

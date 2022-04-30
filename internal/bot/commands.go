@@ -27,23 +27,31 @@ func (c *CommandHandler) HandleInput(input string, authorId string) string {
 			return err.Error()
 		}
 
+		accountant, err := models.GetAccountant(c.game, c.db)
+		if err != nil {
+			return err.Error()
+		}
+
+		returnMessage := fmt.Sprintf("Your row has been registered: `%s - %s`. Please send the entry fee of %d SEK to %s.",
+			dbRow.NumbersToString(),
+			dbRow.BonusNumbersToString(),
+			c.game.EntryFee,
+			accountant.Mobile)
+
 		if dbRow.User.Mobile == "" || dbRow.User.Name == "" {
-			return fmt.Sprintf(`Welcome to %s!
-Your row is: %s - %s
+			returnMessage = fmt.Sprintf(`%s
 
 To be able to win, we need some additional information to be able to confim your transactions.
 
 To do this, please type !setup <name> <mobile>
 example: !setup --name=John Doe --mobile=0731234567
 
-Note: It's important that the number and name you enter matches your Swish information exactly. If you are unsure, please contact a server administrator.`,
-				c.game.Name,
-				dbRow.NumbersToString(),
-				dbRow.BonusNumbersToString(),
+Note: It's important that the mobile number and name that you enter matches your Swish information exactly. If you are unsure, please contact a server administrator.`,
+				returnMessage,
 			)
 		}
 
-		return dbRow.NumbersToString()
+		return returnMessage
 	case strings.HasPrefix(input, "!createraffle"):
 		raffle, err := c.handleCreateRaffle(input)
 		if err != nil {
@@ -111,6 +119,7 @@ func (c *CommandHandler) handleJoin(msg string, userId string) (models.Row, erro
 		}
 	}
 	dbRow.UserId = user.Id
+	dbRow.User = *user
 
 	raffle, err := models.GetActiveRaffle(c.game.Id, c.db)
 	if err != nil {

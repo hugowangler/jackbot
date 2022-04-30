@@ -27,6 +27,8 @@ func Migrate(db *gorm.DB) error {
 						BonusRange   int
 						EntryFee     int
 						Active       bool
+						AccountantId string
+						Accountant   models.User
 					}
 					type Raffle struct {
 						Id           uint64 `gorm:"primaryKey"`
