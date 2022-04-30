@@ -219,6 +219,11 @@ func (c *CommandHandler) handleCreateGame(msg string) (models.Game, error) {
 		return models.Game{}, fmt.Errorf("entryfee must be an integer")
 	}
 
+	game.AccountantId, exists = args["accountant"]
+	if !exists {
+		return models.Game{}, fmt.Errorf("accountant is required")
+	}
+
 	game.Active = true
 
 	err = models.CreateGame(&game, c.db)

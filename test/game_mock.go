@@ -15,6 +15,7 @@ var MockGame = models.Game{
 	BonusRange:   5,
 	EntryFee:     5,
 	Active:       true,
+	AccountantId: MockUser.Id,
 }
 
 func SeedGame(game *models.Game, db *gorm.DB) error {
