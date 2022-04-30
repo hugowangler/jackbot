@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -13,6 +14,14 @@ type PreviousRaffleNotCompletedError struct {
 
 func (e *PreviousRaffleNotCompletedError) Error() string {
 	return fmt.Sprintf("a raffle in currently ongoing for the game: %s", e.name)
+}
+
+type NoActiveRaffleError struct {
+	userId string
+}
+
+func (e *NoActiveRaffleError) Error() string {
+	return fmt.Sprintf("there currently no active raffle")
 }
 
 type Raffle struct {
@@ -36,4 +45,17 @@ func CreateRaffle(raffle *Raffle, db *gorm.DB) error {
 	}
 
 	return db.Create(raffle).Error
+}
+
+func GetActiveRaffle(gameId uint64, db *gorm.DB) (*Raffle, error) {
+	var existingRaffle *Raffle
+	if err := db.Where("date IS NULL AND game_id = ?", gameId).First(&existingRaffle).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, &NoActiveRaffleError{}
+		} else {
+			return nil, err
+		}
+	}
+
+	return existingRaffle, nil
 }

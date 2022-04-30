@@ -54,6 +54,7 @@ func Migrate(db *gorm.DB) error {
 						CreatedAt   time.Time
 						UpdatedAt   time.Time
 						Name        string
+						Mobile      string
 						TotalAmount int
 					}
 					type Permission struct {

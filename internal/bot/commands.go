@@ -22,10 +22,27 @@ type CommandHandler struct {
 func (c *CommandHandler) HandleInput(input string, authorId string) string {
 	switch {
 	case strings.HasPrefix(input, "!join"):
-		dbRow, err := c.handleJoin(input)
+		dbRow, err := c.handleJoin(input, authorId)
 		if err != nil {
 			return err.Error()
 		}
+
+		if dbRow.User.Mobile == "" || dbRow.User.Name == "" {
+			return fmt.Sprintf(`Welcome to %s!
+Your row is: %s - %s
+
+To be able to win, we need some additional information to be able to confim your transactions.
+
+To do this, please type !setup <name> <mobile>
+example: !setup --name=John Doe --mobile=0731234567
+
+Note: It's important that the number and name you enter matches your Swish information exactly. If you are unsure, please contact a server administrator.`,
+				c.game.Name,
+				dbRow.NumbersToString(),
+				dbRow.BonusNumbersToString(),
+			)
+		}
+
 		return dbRow.NumbersToString()
 	case strings.HasPrefix(input, "!createraffle"):
 		raffle, err := c.handleCreateRaffle(input)
@@ -47,11 +64,17 @@ func (c *CommandHandler) HandleInput(input string, authorId string) string {
 			return err.Error()
 		}
 		return fmt.Sprintf("game created: %s", game.Name)
+	case strings.HasPrefix(input, "!setup"):
+		user, err := c.handleSetupUser(input, authorId)
+		if err != nil {
+			return err.Error()
+		}
+		return fmt.Sprintf("user created: %s", user.Name)
 	}
 	return ""
 }
 
-func (c *CommandHandler) handleJoin(msg string) (models.Row, error) {
+func (c *CommandHandler) handleJoin(msg string, userId string) (models.Row, error) {
 	msg = strings.TrimSpace(strings.TrimPrefix(msg, "!join"))
 
 	var dbRow models.Row
@@ -68,6 +91,36 @@ func (c *CommandHandler) handleJoin(msg string) (models.Row, error) {
 			return models.Row{}, err
 		}
 	}
+
+	user, err := models.GetUser(userId, c.db)
+	if err != nil {
+		utils.LogServerError(err, c.logger)
+	}
+	if user == nil {
+		user = &models.User{
+			Id: userId,
+		}
+		if models.CreateUser(*user, c.db) != nil {
+			if err, ok := err.(*models.UserAlreadyExistsError); ok {
+				return models.Row{}, err
+			}
+
+			err = utils.LogServerError(err, c.logger)
+			return models.Row{}, err
+		}
+	}
+	dbRow.UserId = user.Id
+
+	raffle, err := models.GetActiveRaffle(c.game.Id, c.db)
+	if err != nil {
+		if err, ok := err.(*models.PreviousRaffleNotCompletedError); ok {
+			return models.Row{}, err
+		}
+
+		err = utils.LogServerError(err, c.logger)
+		return models.Row{}, err
+	}
+	dbRow.RaffleId = raffle.Id
 
 	res := c.db.Create(&dbRow)
 	if res.Error != nil {
@@ -169,6 +222,52 @@ func (c *CommandHandler) handleCreateGame(msg string) (models.Game, error) {
 	}
 
 	return game, nil
+}
+
+func (c *CommandHandler) handleSetupUser(msg string, userId string) (models.User, error) {
+	msg = strings.TrimSpace(strings.TrimPrefix(msg, "!setup"))
+
+	user := &models.User{}
+	var err error
+	var exists bool
+
+	user, err = models.GetUser(userId, c.db)
+	if err != nil {
+		utils.LogServerError(err, c.logger)
+	}
+
+	if user == nil {
+		user = &models.User{
+			Id: userId,
+		}
+		if models.CreateUser(*user, c.db) != nil {
+			if err, ok := err.(*models.UserAlreadyExistsError); ok {
+				return models.User{}, err
+			}
+
+			err = utils.LogServerError(err, c.logger)
+			return models.User{}, err
+		}
+	}
+
+	args := ParseArguments(msg)
+
+	user.Name, exists = args["name"]
+	if !exists {
+		return models.User{}, fmt.Errorf("name is required")
+	}
+
+	user.Mobile, exists = args["mobile"]
+	if !exists {
+		return models.User{}, fmt.Errorf("mobile is required")
+	}
+
+	if c.db.Save(&user).Error != nil {
+		err = utils.LogServerError(err, c.logger)
+		return models.User{}, err
+	}
+
+	return *user, nil
 }
 
 func NewCmdHandler(
