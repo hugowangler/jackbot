@@ -16,6 +16,7 @@ type CommandHandler struct {
 	db         *gorm.DB
 	logger     *zap.SugaredLogger
 	rowHandler *row.Handler
+	game       models.Game
 }
 
 func (c *CommandHandler) HandleInput(input string, authorId string) string {
@@ -26,6 +27,12 @@ func (c *CommandHandler) HandleInput(input string, authorId string) string {
 			return err.Error()
 		}
 		return dbRow.NumbersToString()
+	case strings.HasPrefix(input, "!createraffle"):
+		raffle, err := c.handleCreateRaffle(input)
+		if err != nil {
+			return err.Error()
+		}
+		return fmt.Sprintf("Raffle created: %d", raffle.GameId)
 	case strings.HasPrefix(input, "!creategame"):
 		hasPermission, err := models.HasPermissions(authorId, []int{models.MasterAdmin}, c.db)
 		if err != nil {
@@ -69,6 +76,25 @@ func (c *CommandHandler) handleJoin(msg string) (models.Row, error) {
 	}
 
 	return dbRow, nil
+}
+
+func (c *CommandHandler) handleCreateRaffle(msg string) (models.Raffle, error) {
+	var raffle models.Raffle
+
+	raffle.GameId = c.game.Id
+
+	err := models.CreateRaffle(&raffle, c.db)
+
+	if err != nil {
+		if err, ok := err.(*models.PreviousRaffleNotCompletedError); ok {
+			return models.Raffle{}, err
+		}
+
+		err = utils.LogServerError(err, c.logger)
+		return models.Raffle{}, err
+	}
+
+	return raffle, nil
 }
 
 func (c *CommandHandler) handleCreateGame(msg string) (models.Game, error) {

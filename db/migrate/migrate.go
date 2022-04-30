@@ -35,7 +35,7 @@ func Migrate(db *gorm.DB) error {
 						GameId       uint64
 						Game         models.Game
 						WinningRowId uint64
-						Date         time.Time
+						Date         *time.Time
 					}
 					type Row struct {
 						Id           uint64 `gorm:"primaryKey"`
