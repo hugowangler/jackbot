@@ -31,7 +31,7 @@ func main() {
 		logger.Fatal("missing required environment variable BOT_PREFIX")
 	}
 
-	db, err := db.NewConn()
+	gormDb, err := db.NewConn()
 	if err != nil {
 		logger.With("error", err).Fatal("failed to connect to db")
 	}
@@ -44,12 +44,12 @@ func main() {
 	mathrand.Seed(int64(binary.LittleEndian.Uint64(b[:])))
 
 	var games []models.Game
-	res := db.Where("active", true).Find(&games)
+	res := gormDb.Where("active", true).Find(&games)
 	if res.Error != nil {
 		logger.With("error", res.Error).Fatal("failed to get games from db")
 	}
 
-	jackbot := bot.NewBot(token, prefix, games, logger, db)
+	jackbot := bot.NewBot(token, prefix, &games[0], logger, gormDb)
 	err = jackbot.Start()
 	if err != nil {
 		logger.With("error", err).Fatal("failed to start jackbot")

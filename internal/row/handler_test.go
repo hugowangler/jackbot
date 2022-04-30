@@ -8,7 +8,7 @@ import (
 )
 
 var mockRowHandler = Handler{
-	models.Game{
+	&models.Game{
 		Numbers:      5,
 		NumbersRange: 10,
 		BonusNumbers: 2,

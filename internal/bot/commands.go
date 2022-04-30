@@ -16,7 +16,7 @@ type CommandHandler struct {
 	db         *gorm.DB
 	logger     *zap.SugaredLogger
 	rowHandler *row.Handler
-	game       models.Game
+	game       *models.Game
 }
 
 func (c *CommandHandler) HandleInput(input string, authorId string) string {
@@ -169,4 +169,31 @@ func (c *CommandHandler) handleCreateGame(msg string) (models.Game, error) {
 	}
 
 	return game, nil
+}
+
+func NewCmdHandler(
+	db *gorm.DB,
+	logger *zap.SugaredLogger,
+	opts ...func(c *CommandHandler),
+) *CommandHandler {
+	cmd := &CommandHandler{
+		db:     db,
+		logger: logger,
+	}
+	for _, o := range opts {
+		o(cmd)
+	}
+	return cmd
+}
+
+func WithGame(game *models.Game) func(c *CommandHandler) {
+	return func(c *CommandHandler) {
+		c.game = game
+	}
+}
+
+func WithRowHandler(handler *row.Handler) func(c *CommandHandler) {
+	return func(c *CommandHandler) {
+		c.rowHandler = handler
+	}
 }
