@@ -17,6 +17,6 @@ WORKDIR /app
 COPY --from=builder /go/pkg/mod /go/pkg/mod
 COPY --from=builder /app /app
 
-RUN app/bin/jackbot/migrate/main
+RUN /app/bin/jackbot/migrate/main
 
 CMD ["/app/bin/jackbot/jackbot/main"]
