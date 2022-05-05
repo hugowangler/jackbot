@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jackbot-deployment
+  labels:
+    app: jackbot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jackbot
+  template:
+    metadata:
+      labels:
+        app: jackbot
+    spec:
+      containers:
+        - name: jackbot
+          image: ghcr.io/hugowangler/jackbot:v0.1.3

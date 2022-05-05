@@ -1,0 +1,6 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: jackbot-platform
+  labels:
+    name: jackbot-platform
