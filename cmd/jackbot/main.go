@@ -10,7 +10,6 @@ import (
 	mathrand "math/rand"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/joho/godotenv"
@@ -44,23 +43,12 @@ func main() {
 	}
 	mathrand.Seed(int64(binary.LittleEndian.Uint64(b[:])))
 
-	var games []models.Game
-	res := gormDb.Where("active", true).Find(&games)
-	if res.Error != nil {
-		logger.With("error", res.Error).Fatal("failed to get games from db")
+	game, err := models.GetCurrentGame(gormDb, logger)
+	if err != nil {
+		panic(err)
 	}
 
-	if len(games) == 0 {
-		env := os.Getenv("ENVIRONMENT")
-		if strings.Contains("dev", strings.ToLower(env)) {
-			game, err := models.InitializeDevGame(gormDb)
-			if err == nil {
-				games = append(games, game)
-			}
-		}
-	}
-
-	jackbot := bot.NewBot(token, prefix, &games[0], logger, gormDb)
+	jackbot := bot.NewBot(token, prefix, game, logger, gormDb)
 	err = jackbot.Start()
 	if err != nil {
 		logger.With("error", err).Fatal("failed to start jackbot")

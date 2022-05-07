@@ -28,16 +28,11 @@ func (c *CommandHandler) HandleInput(input string, authorId string) string {
 			return err.Error()
 		}
 
-		accountant, err := models.GetAccountant(c.game, c.db)
-		if err != nil {
-			return err.Error()
-		}
-
 		returnMessage := fmt.Sprintf("Your row has been registered: `%s - %s`. Please send the entry fee of %d SEK to %s.",
 			dbRow.NumbersToString(),
 			dbRow.BonusNumbersToString(),
 			c.game.EntryFee,
-			accountant.Mobile)
+			c.game.Accountant.Mobile)
 
 		if dbRow.User.Mobile == "" || dbRow.User.Name == "" {
 			returnMessage = fmt.Sprintf(`%s
@@ -283,6 +278,13 @@ func (c *CommandHandler) handleSetupUser(msg string, userId string) (models.User
 	if c.db.Save(&user).Error != nil {
 		err = utils.LogServerError(err, c.logger)
 		return models.User{}, err
+	}
+
+	if user.Id == c.game.AccountantId {
+		game, _ := models.GetCurrentGame(c.db, c.logger)
+		if game != nil {
+			c.game = game
+		}
 	}
 
 	return *user, nil

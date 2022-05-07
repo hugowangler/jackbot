@@ -2,8 +2,11 @@ package models
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -44,15 +47,6 @@ func CreateGame(game *Game, db *gorm.DB) error {
 	return db.Create(game).Error
 }
 
-func GetAccountant(game *Game, db *gorm.DB) (*User, error) {
-	var accountant *User
-	if err := db.Where("Id = ?", game.AccountantId).First(&accountant).Error; err != nil {
-		return nil, err
-	}
-
-	return accountant, nil
-}
-
 func InitializeDevGame(db *gorm.DB) (Game, error) {
 	game := &Game{
 		Name:         "DevJackbot",
@@ -65,6 +59,31 @@ func InitializeDevGame(db *gorm.DB) (Game, error) {
 		AccountantId: "178632146762596352",
 	}
 
-	error := db.Create(game).Error
+	error := db.Create(game).Preload("Accountant").Error
 	return *game, error
+}
+
+func GetCurrentGame(db *gorm.DB, logger *zap.SugaredLogger) (*Game, error) {
+	var games []Game
+	err := db.Where("active", true).Preload("Accountant").Find(&games).Error
+	if err != nil {
+		logger.Fatal(err)
+		return nil, fmt.Errorf("failed to get games from db")
+	}
+
+	if len(games) == 0 {
+		env := os.Getenv("ENVIRONMENT")
+		if strings.Contains("dev", strings.ToLower(env)) {
+			game, err := InitializeDevGame(db)
+			if err == nil {
+				games = append(games, game)
+			}
+		}
+	}
+
+	if len(games) == 0 {
+		return nil, fmt.Errorf("no games found")
+	}
+
+	return &games[0], err
 }
