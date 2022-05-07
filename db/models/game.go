@@ -52,3 +52,19 @@ func GetAccountant(game *Game, db *gorm.DB) (*User, error) {
 
 	return accountant, nil
 }
+
+func InitializeDevGame(db *gorm.DB) (Game, error) {
+	game := &Game{
+		Name:         "DevJackbot",
+		Numbers:      5,
+		NumbersRange: 50,
+		BonusNumbers: 2,
+		BonusRange:   12,
+		EntryFee:     5,
+		Active:       true,
+		AccountantId: "178632146762596352",
+	}
+
+	error := db.Create(game).Error
+	return *game, error
+}

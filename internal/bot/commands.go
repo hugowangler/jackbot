@@ -10,6 +10,7 @@ import (
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type CommandHandler struct {
@@ -77,7 +78,7 @@ Note: It's important that the mobile number and name that you enter matches your
 		if err != nil {
 			return err.Error()
 		}
-		return fmt.Sprintf("user created: %s", user.Name)
+		return fmt.Sprintf("Thanks %s, your information has been updated! If you ever need to update again, just run the same command.", user.Name)
 	}
 	return ""
 }
@@ -123,7 +124,7 @@ func (c *CommandHandler) handleJoin(msg string, userId string) (models.Row, erro
 
 	raffle, err := models.GetActiveRaffle(c.game.Id, c.db)
 	if err != nil {
-		if err, ok := err.(*models.PreviousRaffleNotCompletedError); ok {
+		if err, ok := err.(*models.NoActiveRaffleError); ok {
 			return models.Row{}, err
 		}
 
@@ -132,7 +133,10 @@ func (c *CommandHandler) handleJoin(msg string, userId string) (models.Row, erro
 	}
 	dbRow.RaffleId = raffle.Id
 
-	res := c.db.Create(&dbRow)
+	res := c.db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "raffle_id"}, {Name: "user_id"}},
+		UpdateAll: true,
+	}).Create(&dbRow)
 	if res.Error != nil {
 		err = utils.LogServerError(err, c.logger)
 		return models.Row{}, err

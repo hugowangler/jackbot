@@ -40,14 +40,13 @@ func Migrate(db *gorm.DB) error {
 						Date         *time.Time
 					}
 					type Row struct {
-						Id           uint64 `gorm:"primaryKey"`
 						CreatedAt    time.Time
 						UpdatedAt    time.Time
-						RaffleId     uint64
+						RaffleId     uint64 `gorm:"primaryKey"`
 						Raffle       Raffle
 						Numbers      pq.Int32Array `gorm:"type:integer[]"`
 						BonusNumbers pq.Int32Array `gorm:"type:integer[]"`
-						UserId       string
+						UserId       string        `gorm:"primaryKey"`
 						User         models.User
 						Paid         bool
 					}
