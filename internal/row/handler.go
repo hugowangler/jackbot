@@ -44,7 +44,7 @@ func (r *Handler) GetRandomRow() models.Row {
 			number := rand.Intn(r.BonusRange) + 1
 			if _, exists := selectedBonusNumbers[number]; !exists {
 				selectedBonusNumbers[number] = struct{}{}
-				row.BonusNumbers = append(row.Numbers, int32(number))
+				row.BonusNumbers = append(row.BonusNumbers, int32(number))
 				break
 			}
 		}

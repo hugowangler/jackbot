@@ -27,6 +27,8 @@ func Migrate(db *gorm.DB) error {
 						BonusRange   int
 						EntryFee     int
 						Active       bool
+						AccountantId string
+						Accountant   models.User
 					}
 					type Raffle struct {
 						Id           uint64 `gorm:"primaryKey"`
@@ -38,14 +40,13 @@ func Migrate(db *gorm.DB) error {
 						Date         *time.Time
 					}
 					type Row struct {
-						Id           uint64 `gorm:"primaryKey"`
 						CreatedAt    time.Time
 						UpdatedAt    time.Time
-						RaffleId     uint64
+						RaffleId     uint64 `gorm:"primaryKey"`
 						Raffle       Raffle
 						Numbers      pq.Int32Array `gorm:"type:integer[]"`
 						BonusNumbers pq.Int32Array `gorm:"type:integer[]"`
-						UserId       string
+						UserId       string        `gorm:"primaryKey"`
 						User         models.User
 						Paid         bool
 					}
@@ -54,6 +55,7 @@ func Migrate(db *gorm.DB) error {
 						CreatedAt   time.Time
 						UpdatedAt   time.Time
 						Name        string
+						Mobile      string
 						TotalAmount int
 					}
 					type Permission struct {
