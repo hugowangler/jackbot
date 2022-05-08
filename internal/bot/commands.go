@@ -86,7 +86,12 @@ func (c *CommandHandler) handleJoin(msg string, userId string) (models.Row, erro
 
 	switch msg {
 	case "":
-		return models.Row{}, fmt.Errorf("help me")
+		return models.Row{}, fmt.Errorf(`A lottery row is based on %d numbers, ranging from 1 to %d and %d bonus numbers ranging from 1 to %d. A set percentage from the pot is distrubuted to the winners depending on how many matching numbers there are. If there is money left in the pot after a raffle, that amount is added to the next raffle.
+The entry fee to join the raffle is %d SEK and is sent using Swish to %s
+
+To join the raffle you can either enter your own row or randomly generate one:
+	- !join random
+	- !join 1 2 3 4 - 5 6`, c.game.Numbers, c.game.NumbersRange, c.game.BonusNumbers, c.game.BonusRange, c.game.EntryFee, c.game.Accountant.Mobile)
 	case "random":
 		dbRow = c.rowHandler.GetRandomRow()
 	default:
